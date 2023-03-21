@@ -9,33 +9,29 @@
         md="4"
         lg="3"
       >
-      <router-link :to="{ name: 'PokemonDetails', params: { id: pokemon.id } }">
         <v-card
-          class="mx-auto"
+          class="pokemon-card"
           max-width="344"
           outlined
           :class="{ 'elevation-12': selectedPokemon === pokemon }"
           @mouseenter="selectedPokemon = pokemon"
           @mouseleave="selectedPokemon = null"
+          @click="showModal = true, selectedImage = pokemon.image, selectedName = pokemon.name"
         >
           <v-img :src="pokemon.image" height="200"></v-img>
           <v-card-title>
             <h5>{{ pokemon.name }}</h5>
           </v-card-title>
 
-            <v-chip
-              v-for="(type, index) in pokemon.type.split(',')"
-              :key="index"
-              :color="getTypeColor(type.trim())"
-            >
-              {{ type.trim() }}
-            </v-chip>
-            <v-btn :to="{ name: 'PokemonDetails', params: { id: pokemon.id } }" text>
-              Detalhes
-            </v-btn>
-         
+          <v-chip
+            v-for="(type, index) in pokemon.type.split(',')"
+            :key="index"
+            :color="getTypeColor(type.trim())"
+          >
+            {{ type.trim() }}
+          </v-chip>
+
         </v-card>
-      </router-link>
       </v-col>
     </v-row>
     <v-row v-if="isLoading">
@@ -46,11 +42,26 @@
         ></v-progress-circular>
       </v-col>
     </v-row>
+    <v-dialog v-model="showModal" max-width="500" max-height="1200">
+      <v-card id="dialog-card">
+   <div id="teste1">
+     <span>{{ selectedName }}</span>
+    </div>
+    <v-img :src="selectedImage" height="100"></v-img>
+  </v-card>
+</v-dialog>
   </v-container>
 </template>
 
 
+
 <style scoped>
+
+#teste1{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .v-card-title {
   font-family: "Flexo-Demi", arial, sans-serif;
   color: #313131;
@@ -58,17 +69,30 @@
   font-size: 175%;
   margin-bottom: 5px;
 }
-.v-card {
+
+#dialog-name{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+}
+
+#dialog-card{
+  display: flex;
+  align-content: center;
+  flex-direction: column;
+}
+.pokemon-card {
   border-radius: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   cursor: pointer;
 }
-.v-card:hover {
+.pokemon-card:hover {
   transform: scale(1.05);
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
 }
-.v-card:hover .v-img {
+.pokemon-card:hover .v-img {
   transform: scale(1.1);
 }
 .v-img {
@@ -87,7 +111,7 @@ import {
   VImg,
   VProgressCircular,
   VChip,
-  VBtn
+  VDialog
   // Adicione aqui outros componentes que utilizar
 } from "vuetify/components";
 
@@ -101,11 +125,12 @@ export default {
     VImg,
     VProgressCircular,
     VChip,
-    VBtn
+    VDialog
     // Adicione aqui outros componentes que utilizar
   },
   data() {
     return {
+      showModal: false,
       pokemons: [],
       offset: 0,
       limit: 300,
@@ -151,9 +176,9 @@ export default {
               pokemonResponse.data.sprites.other["official-artwork"]
                 .front_default,
             type: pokemonResponse.data.types.map((t) => t.type.name).join(", "),
+            stats: pokemonResponse.data.stats.map((s) => s.stat.name),
           };
           this.pokemons.push(pokemon);
-          console.log("dsfsdffds", pokemon);
         }
         this.offset += this.limit;
       } catch (error) {
