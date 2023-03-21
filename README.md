@@ -12,6 +12,11 @@ Para começar a usar este aplicativo, siga estas etapas:
 4. Inicie o servidor de desenvolvimento usando `yarn start`.
 5. Abra seu navegador e navegue até `http://localhost:3000`.
 
+## Testes no cypress
+
+* Teste via terminal usando `yarn cypress run`.
+* Teste via interface usando `yarn cypress open`.
+
 ## Características
 
 * Pesquise Pokémon por nome ou ID.
@@ -22,7 +27,7 @@ Para começar a usar este aplicativo, siga estas etapas:
 
 * ReactJS
 * CSS
-* Bootstrap
+* Vuetify
 * PokeAPI
 
 ## Créditos
@@ -32,3 +37,5 @@ Este projeto foi idealizado por Felipe De bastos. Agradecimentos especiais aos c
 ## Licença
 
 Este projeto está licenciado sob a licença MIT. Consulte o arquivo LICENSE.md para obter detalhes.
+
+
