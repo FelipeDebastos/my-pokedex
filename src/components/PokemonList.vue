@@ -2,15 +2,13 @@
   <v-container>
     <v-row justify="center">
       <v-col cols="12" sm="8" md="6">
-        <v-text-field
-          v-model="search"
+        <SearchPokemon
           :label="label"
-          @input="filterPokemons"
-          solo
-          placeholder="Pokemon"
-          clearable
-          clear-icon="mdi-close-circle-outline"
-          append-icon="mdi-magnify"
+          :value="search"
+          @input="
+            search = $event.target.value;
+            filterPokemons();
+          "
         />
       </v-col>
     </v-row>
@@ -91,6 +89,7 @@
 <script>
 import axios from "axios";
 import * as d3 from "d3";
+import SearchPokemon from "./SearchPokemon.vue";
 
 import {
   VContainer,
@@ -102,7 +101,6 @@ import {
   VProgressCircular,
   VChip,
   VDialog,
-  VTextField,
 } from "vuetify/components";
 export default {
   components: {
@@ -115,10 +113,11 @@ export default {
     VProgressCircular,
     VChip,
     VDialog,
-    VTextField,
+    SearchPokemon,
   },
   data() {
     return {
+      label: "Pokemon",
       search: "",
       showModal: false,
       pokemons: [],
@@ -126,7 +125,7 @@ export default {
       selectedStats: [],
       filteredPokemons: [],
       offset: 0,
-      limit: 300,
+      limit: 898,
       isLoading: false,
       typeColors: {
         normal: "brown lighten-3",
@@ -145,55 +144,60 @@ export default {
     };
   },
   mounted() {
-    this.loadPokemons();
-    window.addEventListener("scroll", this.handleScroll);
+  this.loadPokemons();
+  window.addEventListener("scroll", this.handleScroll);
+},
+
+beforeUnmount() {
+  window.removeEventListener("scroll", this.handleScroll);
+},
+
+methods: {
+  handleScroll() {
+    const scrollHeight = document.documentElement.scrollHeight;
+    const scrollTop = document.documentElement.scrollTop;
+    const clientHeight = document.documentElement.clientHeight;
+
+    if (scrollTop + clientHeight >= scrollHeight && !this.isLoading) {
+      this.offset += this.limit;
+      this.loadPokemons();
+    }
   },
-  beforeUnmount() {
-    window.removeEventListener("scroll", this.handleScroll);
-  },
-  methods: {
-    async loadPokemons() {
-      try {
-        this.isLoading = true;
-        const response = await axios.get(
-          `https://pokeapi.co/api/v2/pokemon/?offset=${this.offset}&limit=${this.limit}`
-        );
-        const pokemons = response.data.results;
-        for (let i = 0; i < pokemons.length; i++) {
-          const pokemonResponse = await axios.get(pokemons[i].url);
-          const pokemon = {
-            id: pokemonResponse.data.id,
-            name: pokemonResponse.data.name,
-            image:
-              pokemonResponse.data.sprites.other["official-artwork"]
-                .front_default,
-            type: pokemonResponse.data.types.map((t) => t.type.name).join(", "),
-            stats: pokemonResponse.data.stats.map((s) => {
-              return {
-                name: s.stat.name,
-                value: s.base_stat,
-              };
-            }),
-          };
-          this.pokemons.push(pokemon);
-        }
-        this.filteredPokemons = this.pokemons;
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
+
+  async loadPokemons() {
+  try {
+    this.isLoading = true;
+    const response = await axios.get(
+      `https://pokeapi.co/api/v2/pokemon/?offset=${this.offset}&limit=${this.limit}`
+    );
+    const pokemons = response.data.results;
+    for (let i = 0; i < pokemons.length; i++) {
+      const pokemonResponse = await axios.get(pokemons[i].url);
+      const pokemon = {
+        id: pokemonResponse.data.id,
+        name: pokemonResponse.data.name,
+        image:
+          pokemonResponse.data.sprites.other["official-artwork"]
+            .front_default,
+        type: pokemonResponse.data.types
+          .map((type) => type.type.name)
+          .join(", "),
+        stats: pokemonResponse.data.stats.map((stat) => ({
+          name: stat.stat.name,
+          value: stat.base_stat,
+          type: stat.stat.name,
+        })),
+      };
+      this.pokemons.push(pokemon);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    this.isLoading = false;
+  }
+},
     getTypeColor(type) {
       return this.typeColors[type] || "";
-    },
-    handleScroll() {
-      const scrollPosition = window.innerHeight + window.scrollY;
-      const pageHeight = document.body.offsetHeight;
-      if (scrollPosition >= pageHeight && !this.isLoading) {
-        // Increment the limit to load more pokemons  this.limit += 20;
-        this.loadPokemons();
-      }
     },
     filterPokemons() {
       this.filteredPokemons = this.pokemons.filter((pokemon) =>
@@ -260,7 +264,7 @@ export default {
 <style scoped>
 @import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
 
-.v-card-title{
+.v-card-title {
   display: flex;
   justify-content: center;
   text-transform: capitalize;
@@ -275,7 +279,7 @@ export default {
   padding: 1rem;
 }
 
-.v-chip{
+.v-chip {
   margin: 5px;
 }
 
