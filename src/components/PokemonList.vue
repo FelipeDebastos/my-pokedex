@@ -7,6 +7,7 @@
           :label="label"
           @input="filterPokemons"
           solo
+          placeholder="Pokemon"
           clearable
           clear-icon="mdi-close-circle-outline"
           append-icon="mdi-magnify"
@@ -61,16 +62,29 @@
       </v-col>
     </v-row>
     <v-dialog v-model="showModal" max-width="900" max-height="1200">
-      <v-card id="dialog-card">
-        <div id="pokemon-title">
-          <span>{{ selectedName }}</span>
-        </div>
-        <v-img :src="selectedImage" height="100"></v-img>
-        <div id="chart-container">
-          <svg id="chart" v-once></svg>
-        </div>
-      </v-card>
-    </v-dialog>
+      <v-card>
+        <div class="dialog-card">
+          <v-img :src="selectedImage" height="200" width="200" />
+          <div class="pokemon-title">
+            <span>{{ selectedName }}</span>
+          </div>
+
+          <div class="chart-container">
+            <svg id="chart" v-once></svg>
+          </div>
+          <div class="stats-container">
+            <div
+              class="stat"
+              v-for="stat in selectedStats"
+              :key="stat.name"
+              v-bind:class="stat.type"
+            >
+              <span>{{ stat.name }}: {{ stat.value }}</span>
+            </div>
+          </div>
+        </div></v-card
+      ></v-dialog
+    >
   </v-container>
 </template>
 
@@ -193,7 +207,7 @@ export default {
         value: stat.value,
       }));
       const margin = { top: 20, right: 20, bottom: 30, left: 40 };
-      const width = 500 - margin.left - margin.right;
+      const width = 700 - margin.left - margin.right;
       const height = 300 - margin.top - margin.bottom;
       const svg = d3
         .select("#chart")
@@ -202,7 +216,7 @@ export default {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      const x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+      const x = d3.scaleBand().rangeRound([0, width]).padding(0.2);
       const y = d3.scaleLinear().rangeRound([height, 0]);
 
       x.domain(data.map((d) => d.name));
@@ -212,18 +226,16 @@ export default {
         .append("g")
         .attr("class", "axis axis--x")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
-
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("class", "axis");
       svg
         .append("g")
         .attr("class", "axis axis--y")
-        .call(d3.axisLeft(y).ticks(10))
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", "0.71em")
-        .attr("text-anchor", "end")
-        .text("Value");
+        .call(d3.axisLeft(y).ticks(10));
+      svg.selectAll(".axis").style("font-size", "14px").attr("class", "axis");
+
+      const colorScale = d3.scaleOrdinal(d3.schemeSet3);
 
       svg
         .selectAll(".bar")
@@ -234,19 +246,81 @@ export default {
         .attr("x", (d) => x(d.name))
         .attr("y", (d) => y(d.value))
         .attr("width", x.bandwidth())
-        .attr("height", (d) => height - y(d.value));
+        .attr("height", (d) => height - y(d.value))
+        .style("fill", (d) => colorScale(d.name));
     },
     destroyChart() {
       d3.select("#chart").selectAll("*").remove();
     },
   },
 };
-</script><style scoped>
+</script>
+
+
+<style scoped>
+@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+
+.v-card-title{
+  display: flex;
+  justify-content: center;
+  text-transform: capitalize;
+  font-size: 30px;
+  font-family: "Roboto", sans-serif;
+}
+.dialog-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.v-chip{
+  margin: 5px;
+}
+
+.axis text {
+  font-size: 24px;
+}
+.pokemon-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  font-family: "Roboto", sans-serif;
+  text-transform: capitalize;
+}
+.stats-container {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  font-family: Arial, sans-serif;
+  font-size: 1.2rem;
+}
+.stat {
+  margin: 0.5rem;
+  font-size: 18px;
+}
+.chart-container {
+  display: flex;
+  justify-content: center;
+}
+
 .pokemon-card {
-  cursor: pointer;
-  transition: box-shadow 0.2s ease-in-out;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.9);
 }
 .pokemon-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  transform: translateY(-10px);
+}
+.pokemon-card.elevation-12 {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+.pokemon-card:hover > v-img {
+  transform: scale(2.5);
+  transition: transform 0.3s ease-in-out;
 }
 </style>
