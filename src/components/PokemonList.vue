@@ -125,8 +125,9 @@ export default {
       selectedStats: [],
       filteredPokemons: [],
       offset: 0,
-      limit: 500,
+      limit: 10,
       isLoading: false,
+      allPokemonsLoaded: false,
       typeColors: {
         normal: "brown lighten-3",
         fire: "red lighten-2 saturate-50",
@@ -148,17 +149,16 @@ export default {
     window.addEventListener("scroll", this.handleScroll);
   },
 
-  beforeUnmount() {
-    window.removeEventListener("scroll", this.handleScroll);
-  },
-
   methods: {
     handleScroll() {
       const scrollHeight = document.documentElement.scrollHeight;
       const scrollTop = document.documentElement.scrollTop;
       const clientHeight = document.documentElement.clientHeight;
 
-      if (scrollTop + clientHeight >= scrollHeight && !this.isLoading) {
+      if (
+        scrollTop + clientHeight >= 0.9 * scrollHeight &&
+        !this.allPokemonsLoaded
+      ) {
         this.offset += this.limit;
         this.loadPokemons();
       }
@@ -166,26 +166,31 @@ export default {
 
     async loadPokemons() {
       try {
+        const API_URL = "https://pokeapi.co/api/v2/pokemon/";
+
         this.isLoading = true;
         const response = await axios.get(
-          `https://pokeapi.co/api/v2/pokemon/?offset=${this.offset}&limit=${this.limit}`
+          `${API_URL}?offset=${this.offset}&limit=${this.limit}`
         );
+
         const pokemons = response.data.results;
+        if (pokemons.length === 0) {
+          this.allPokemonsLoaded = true;
+          return;
+        }
         for (let i = 0; i < pokemons.length; i++) {
-          const pokemonResponse = await axios.get(pokemons[i].url);
+          const { data: pokemonResponse } = await axios.get(
+            `${pokemons[i].url}`
+          );
           const pokemon = {
-            id: pokemonResponse.data.id,
-            name: pokemonResponse.data.name,
-            image:
-              pokemonResponse.data.sprites.other["official-artwork"]
-                .front_default,
-            type: pokemonResponse.data.types.map((t) => t.type.name).join(", "),
-            stats: pokemonResponse.data.stats.map((s) => {
-              return {
-                name: s.stat.name,
-                value: s.base_stat,
-              };
-            }),
+            id: pokemonResponse.id,
+            name: pokemonResponse.name,
+            image: pokemonResponse.sprites.other["official-artwork"].front_default,
+            type: pokemonResponse.types.map((t) => t.type.name).join(", "),
+            stats: pokemonResponse.stats.map((s) => ({
+              name: s.stat.name,
+              value: s.base_stat,
+            })),
           };
           this.pokemons.push(pokemon);
         }
@@ -205,7 +210,6 @@ export default {
         pokemon.name.toLowerCase().includes(filter)
       );
     },
-
     createChart() {
       const data = this.selectedStats.map((stat) => ({
         name: stat.name,
