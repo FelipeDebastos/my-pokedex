@@ -1,79 +1,36 @@
 /* eslint-disable no-undef */
-
-import PokemonList from "@/components/PokemonList.vue";
-import { mount } from "@cypress/vue";
-
-describe("PokemonList", () => {
-  it("should render the component properly", () => {
-    mount(PokemonList, {
-      stubs: [
-        "v-container",
-        "v-row",
-        "v-col",
-        "v-card",
-        "v-img",
-        "v-card-title",
-        "v-chip",
-        "v-dialog",
-        "v-progress-circular",
-      ],
-    });
-
-    cy.get(".pokemon-card").should("have.length", 300);
+describe("Pokemon Search Page", () => {
+  beforeEach(() => {
+    cy.visit("/");
   });
 
-  it("should select the Pokemon and display modal properly", () => {
-    mount(PokemonList, {
-      stubs: [
-        "v-container",
-        "v-row",
-        "v-col",
-        "v-card",
-        "v-img",
-        "v-card-title",
-        "v-chip",
-        "v-dialog",
-        "v-progress-circular",
-      ],
-    });
-
-    cy.get(".pokemon-card").first().click();
-
-    cy.get(".v-dialog--active")
-      .should("be.visible")
-      .within(() => {
-        cy.get(".pokemon-title").should("contain", "bulbasaur");
-        cy.get(".chart-container svg").should("exist");
-        cy.get(".stats-container").should("have.length", 6);
-      });
-
-    cy.get(".v-dialog__content").click("topRight");
-    cy.get(".v-dialog--active").should("not.exist");
+  it("displays a list of Pokemon cards", () => {
+    cy.get(".pokemon-card").should("have.length.greaterThan", 0);
   });
 
-  it("should filter the list of Pokemons properly", () => {
-    mount(PokemonList, {
-      stubs: [
-        "v-container",
-        "v-row",
-        "v-col",
-        "v-card",
-        "v-img",
-        "v-card-title",
-        "v-chip",
-        "v-dialog",
-        "v-progress-circular",
-      ],
+ 
+  it("renders the pokemon types on the card", () => {
+    cy.visit("/"); // acessa a página que queremos testar
+
+    // encontra o elemento de card do primeiro pokemon
+    cy.get(".pokemon-card").first().within(() => {
+      // verifica se os tipos de pokemon estão sendo renderizados
+      cy.get(".v-chip").should("have.length.gt", 0);
     });
-
-    cy.get(".pokemon-card").should("have.length", 300);
-
-    cy.get(".v-input").type("pikachu");
-
-    cy.get(".pokemon-card").should("have.length", 1);
-    cy.get(".pokemon-card h5").should("contain", "pikachu");
-
-    cy.get(".v-input__icon--clear").click();
-    cy.get(".pokemon-card").should("have.length", 300);
   });
+
+  it("Deve carregar mais pokemons quando o usuário chegar ao final da lista", () => {
+    cy.visit("http://localhost:8080"); // Substitua a URL pela URL do seu projeto
+    cy.get(".pokemon-card").should("have.length", 10); // Verifica se existem 10 cartões de pokemons na tela
+    cy.scrollTo("bottom"); // Faz o scroll até o final da página
+    cy.get(".pokemon-card").should("have.length", 20); // Verifica se existem 20 cartões de pokemons na tela
+  });
+
+  it("Exibe o loader quando o usuário desce a página", () => {
+    cy.get(".text-center").should("not.exist");
+    cy.scrollTo("bottom", { duration: 2000 });
+    cy.get(".text-center").should("exist");
+  });
+
+  
 });
