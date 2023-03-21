@@ -14,7 +14,7 @@ import PokemonList from "../components/PokemonList.vue";
 import { VImg } from "vuetify/components";
 
 export default {
-  name: "PokemonDetails",
+  name: "PokemonChart",
   components: {
     PokemonList,
     VImg,
