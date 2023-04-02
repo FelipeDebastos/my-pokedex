@@ -19,9 +19,8 @@ Para começar a usar este aplicativo, siga estas etapas:
 
 ## Características
 
-* Pesquise Pokémon por nome ou ID.
-* Veja informações detalhadas sobre cada Pokémon, incluindo nome, ID, tipo(s), habilidades e estatísticas.
-* Capacidade de adicionar e remover Pokémon de/para uma lista de favoritos.
+* Pesquise Pokémon por nome.
+* Veja informações detalhadas sobre cada Pokémon, incluindo nome, tipo(s), habilidades e estatísticas.
 
 ## Tecnologias usadas
 
