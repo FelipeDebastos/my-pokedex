@@ -24,7 +24,7 @@ Para começar a usar este aplicativo, siga estas etapas:
 
 ## Tecnologias usadas
 
-* ReactJS
+* Vue.js
 * CSS
 * Vuetify
 * PokeAPI
